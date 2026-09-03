@@ -19,6 +19,17 @@ An end-to-end AI-powered data analytics assistant that translates natural langua
 - **Data & Charting:** Pandas, Plotly Express
 
 ---
+## 🏗️ System Architecture
+
+```mermaid
+flowchart LR
+    A[User Natural Language Query] --> B[Groq LLM / ChatGroq]
+    B --> C[SQL Cleaner & Regex Parser]
+    C --> D[DuckDB Engine]
+    D --> E[Pandas DataFrame]
+    E --> F[Plotly Visualizations]
+    E --> G[Executive AI Insights]
+    ```
 
 
 ## 🚀 Quickstart Guide
