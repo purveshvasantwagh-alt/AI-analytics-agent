@@ -117,11 +117,16 @@ User Question: {user_prompt}
             
     return None, last_raw_response, max_retries, error_msg
 
-user_query = st.text_input("Ask a business question:", value="Show total monthly charges and average tenure grouped by contract type")
+user_query = st.text_input("Ask a question about your data:")
 
-if st.button("Run Analytics"):
-    with st.spinner("Agent generating SQL and processing database query..."):
+if st.button("Submit Query") and user_query:
+    with st.spinner("Generating SQL query..."):
         df, final_sql, attempts, last_err = generate_sql_with_retry(user_query, schema)
+        
+        if df is not None:
+            st.write("### Query Results")
+            st.dataframe(df)
+            st.code(final_sql, language="sql")
         
         if df is not None:
             st.success(f"Query executed successfully in {attempts} attempt(s)!")
