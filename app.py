@@ -52,6 +52,22 @@ def get_db_schema():
     conn.close()
     return "Table: subscriptions\nColumns:\n" + "".join([f"- {col[0]} ({col[1]})\n" for col in schema_info])
 
+import duckdb
+import streamlit as st
+
+@st.cache_resource
+def init_db():
+    conn = duckdb.connect(database=':memory:')
+    # Load dataset into DuckDB table on startup
+    conn.execute("CREATE TABLE IF NOT EXISTS subscriptions AS SELECT * FROM read_csv_auto('subscriptions.csv');")
+    return conn
+
+conn = init_db()
+
+def get_db_schema():
+    schema_info = conn.execute("DESCRIBE subscriptions;").fetchall()
+    return schema_info
+
 schema = get_db_schema()
 
 def clean_sql_output(raw_text):
