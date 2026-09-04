@@ -19,6 +19,14 @@ An end-to-end AI-powered data analytics assistant that translates natural langua
 - **Data & Charting:** Pandas, Plotly Express
 
 ---
+
+## 🚀 Quickstart Guide
+
+### 1. Clone the Repository
+```bash
+git clone [https://github.com/purveshvasantwagh-alt/AI-analytics-agent.git](https://github.com/purveshvasantwagh-alt/AI-analytics-agent.git)
+cd AI-analytics-agent
+
 ## 🏗️ System Architecture
 
 ```mermaid
@@ -29,12 +37,3 @@ flowchart LR
     D --> E[Pandas DataFrame]
     E --> F[Plotly Visualizations]
     E --> G[Executive AI Insights]
-    ```
-
-
-## 🚀 Quickstart Guide
-
-### 1. Clone the Repository
-```bash
-git clone [https://github.com/purveshvasantwagh-alt/AI-analytics-agent.git](https://github.com/purveshvasantwagh-alt/AI-analytics-agent.git)
-cd AI-analytics-agent
