@@ -14,7 +14,7 @@ st.set_page_config(page_title="Conversational AI Analytics Engine", layout="wide
 st.title("📊 Conversational AI Analytics Engine")
 st.write("Query enterprise database records in plain English.")
 
-# API Key Resolution (Env variable or Streamlit Secrets)
+# API Key Resolution (Environment Variable or Streamlit Secrets)
 groq_api_key = os.getenv("GROQ_API_KEY")
 if not groq_api_key and "GROQ_API_KEY" in st.secrets:
     groq_api_key = st.secrets["GROQ_API_KEY"]
@@ -107,28 +107,31 @@ User Question: {user_prompt}
 
     return None, last_raw_response, max_retries, error_msg
 
+# Initialize session state for user input persistence
+if "user_query" not in st.session_state:
+    st.session_state.user_query = ""
+
 # Sample Queries Selection
 st.write("💡 **Sample Queries (click to select):**")
 col1, col2, col3 = st.columns(3)
-sample_query = ""
 
 if col1.button("📊 Total Revenue by Plan"):
-    sample_query = "Show total monthly price by plan"
+    st.session_state.user_query = "Show total monthly price by plan"
 if col2.button("👥 Active Subscriptions"):
-    sample_query = "Show count of active subscriptions grouped by plan"
+    st.session_state.user_query = "Show count of active subscriptions grouped by plan"
 if col3.button("❌ Cancelled Users"):
-    sample_query = "List all cancelled subscriptions sorted by signup date"
+    st.session_state.user_query = "List all cancelled subscriptions sorted by signup date"
 
 user_query = st.text_input(
     "Ask a question about your data:",
-    value=sample_query,
+    key="user_query",
     placeholder="e.g., Show total monthly price by plan"
 )
 
 # Execution Logic
-if st.button("Submit Query") and user_query:
+if st.button("Submit Query") and st.session_state.user_query:
     with st.spinner("Generating SQL query & executing analytics..."):
-        df, final_sql, attempts, last_err = generate_sql_with_retry(user_query, schema)
+        df, final_sql, attempts, last_err = generate_sql_with_retry(st.session_state.user_query, schema)
 
         if df is not None:
             st.success(f"Query executed successfully in {attempts} attempt(s)!")
