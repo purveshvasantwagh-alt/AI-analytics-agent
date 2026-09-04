@@ -1,3 +1,7 @@
+# 📊 AI Analytics Engine
+
+🚀 **Live App:** [https://ai-analytics-agent-ecdgbeymdrmqyxszp4lulf.streamlit.app](https://ai-analytics-agent-ecdgbeymdrmqyxszp4lulf.streamlit.app)
+
 # 📊 Conversational AI Analytics Engine
 
 An end-to-end AI-powered data analytics assistant that translates natural language business questions into executable DuckDB SQL queries, generates real-time data visualizations, and delivers automated executive summaries.

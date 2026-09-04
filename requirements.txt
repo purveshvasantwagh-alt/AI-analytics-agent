@@ -2,5 +2,5 @@ streamlit
 duckdb
 pandas
 plotly
-python-dotenv
 langchain-groq
+python-dotenv
