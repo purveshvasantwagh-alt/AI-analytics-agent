@@ -122,17 +122,17 @@ user_query = st.text_input("Ask a question about your data:")
 if st.button("Submit Query") and user_query:
     with st.spinner("Generating SQL query..."):
         df, final_sql, attempts, last_err = generate_sql_with_retry(user_query, schema)
-        
-        if df is not None:
-            st.write("### Query Results")
-            st.dataframe(df)
-            st.code(final_sql, language="sql")
-        
+
         if df is not None:
             st.success(f"Query executed successfully in {attempts} attempt(s)!")
             
+            st.write("### Query Results")
+            st.dataframe(df)
+
             with st.expander("View Generated SQL Query"):
                 st.code(final_sql, language="sql")
+        else:
+            st.error(f"Execution failed: {last_err}")
             
             col1, col2 = st.columns([1, 1])
             
