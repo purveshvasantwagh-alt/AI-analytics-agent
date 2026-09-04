@@ -12,6 +12,21 @@ An end-to-end AI-powered data analytics assistant that translates natural langua
 
 ---
 
+## 🏗️ System Architecture
+
+```mermaid
+flowchart LR
+    A[User Natural Language Query] --> B[Groq LLM / ChatGroq]
+    B --> C[SQL Cleaner & Regex Parser]
+    C --> D[DuckDB Engine]
+    D --> E[Pandas DataFrame]
+    E --> F[Plotly Visualizations]
+    E --> G[Executive AI Insights]
+
+```
+
+---
+
 ## 🛠️ Tech Stack
 - **Frontend / Framework:** Streamlit
 - **Database Engine:** DuckDB
@@ -26,14 +41,3 @@ An end-to-end AI-powered data analytics assistant that translates natural langua
 ```bash
 git clone [https://github.com/purveshvasantwagh-alt/AI-analytics-agent.git](https://github.com/purveshvasantwagh-alt/AI-analytics-agent.git)
 cd AI-analytics-agent
-
-## 🏗️ System Architecture
-
-```mermaid
-flowchart LR
-    A[User Natural Language Query] --> B[Groq LLM / ChatGroq]
-    B --> C[SQL Cleaner & Regex Parser]
-    C --> D[DuckDB Engine]
-    D --> E[Pandas DataFrame]
-    E --> F[Plotly Visualizations]
-    E --> G[Executive AI Insights]
