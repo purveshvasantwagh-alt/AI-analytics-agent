@@ -65,6 +65,67 @@ def get_db_schema():
     return schema_str
 
 schema = get_db_schema()
+st.divider()
+st.header("Telecom Subscription Performance")
+
+total, active, cancelled, active_monthly_charges, avg_price = conn.execute("""
+    SELECT
+        COUNT(*),
+        SUM(CASE WHEN lower(status) = 'active' THEN 1 ELSE 0 END),
+        SUM(CASE WHEN lower(status) = 'cancelled' THEN 1 ELSE 0 END),
+        COALESCE(SUM(CASE WHEN lower(status) = 'active'
+                          THEN monthly_price ELSE 0 END), 0),
+        COALESCE(AVG(monthly_price), 0)
+    FROM subscriptions
+""").fetchone()
+
+churn_rate = (cancelled / total * 100) if total else 0
+
+k1, k2, k3, k4 = st.columns(4)
+k1.metric("Customers", f"{total:,}")
+k2.metric("Active customers", f"{active:,}")
+k3.metric("Churn rate", f"{churn_rate:.1f}%")
+k4.metric("Active monthly charges", f"${active_monthly_charges:,.2f}")
+
+st.caption(f"Average monthly charge per customer: ${avg_price:,.2f}")
+
+plan_df = conn.execute("""
+    SELECT plan,
+           ROUND(SUM(CASE WHEN lower(status) = 'active'
+                          THEN monthly_price ELSE 0 END), 2)
+               AS active_monthly_charges
+    FROM subscriptions
+    GROUP BY plan
+    ORDER BY active_monthly_charges DESC
+""").fetchdf()
+
+churn_df = conn.execute("""
+    SELECT plan,
+           COUNT(*) AS customers,
+           SUM(CASE WHEN lower(status) = 'cancelled' THEN 1 ELSE 0 END)
+               AS cancelled_customers,
+           ROUND(
+               100.0 * SUM(CASE WHEN lower(status) = 'cancelled' THEN 1 ELSE 0 END)
+               / NULLIF(COUNT(*), 0),
+               1
+           ) AS churn_rate_pct
+    FROM subscriptions
+    GROUP BY plan
+    ORDER BY churn_rate_pct DESC
+""").fetchdf()
+
+chart1, chart2 = st.columns(2)
+
+with chart1:
+    st.subheader("Active monthly charges by contract")
+    st.bar_chart(plan_df.set_index("plan")[["active_monthly_charges"]])
+
+with chart2:
+    st.subheader("Churn rate by contract")
+    st.bar_chart(churn_df.set_index("plan")[["churn_rate_pct"]])
+
+with st.expander("View contract-level metrics"):
+    st.dataframe(churn_df, use_container_width=True)
 
 def clean_sql_output(raw_text):
     """Strips thinking tags, markdown syntax, and conversational boilerplate."""
@@ -88,6 +149,8 @@ CRITICAL RULES:
 1. Respond ONLY with the executable DuckDB SQL statement.
 2. Do NOT write explanations, intros, or wrapping text.
 3. Query the 'subscriptions' table.
+4. The subscriptions table uses status values 'active' and 'cancelled' (two l's), never 'canceled'.
+5. For percentages, use 100.0 * numerator / NULLIF(denominator, 0). Do not use integer division.
 
 User Question: {user_prompt}
 """
@@ -113,13 +176,16 @@ if "user_query" not in st.session_state:
 st.write("💡 **Sample Queries (click to select):**")
 col1, col2, col3 = st.columns(3)
 
-if col1.button("📊 Total Revenue by Plan"):
-    st.session_state.user_query = "Show total monthly price by plan"
-if col2.button("👥 Active Subscriptions"):
-    st.session_state.user_query = "Show count of active subscriptions grouped by plan"
-if col3.button("❌ Cancelled Users"):
-    st.session_state.user_query = "List all cancelled subscriptions sorted by signup date"
+if col1.button("📉 Churn rate by contract"):
+    st.session_state.user_query = "Show the cancellation rate by plan"
 
+if col2.button("💰 Active monthly charges by contract"):
+    st.session_state.user_query = "Show total active monthly charges by plan"
+
+if col3.button("⏳ Churn by customer tenure"):
+    st.session_state.user_query = (
+        "Compare cancellation rates for customers with different tenure_months"
+    )
 user_query = st.text_input(
     "Ask a question about your data:",
     key="user_query",
@@ -173,3 +239,4 @@ if st.button("Submit Query") and st.session_state.user_query:
                 st.code(last_err)
                 st.write("**Raw LLM Output:**")
                 st.code(final_sql)
+
