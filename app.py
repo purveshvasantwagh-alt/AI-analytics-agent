@@ -1,9 +1,12 @@
+import hashlib
 import os
 import re
 import duckdb
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+
+from pathlib import Path
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 
@@ -49,13 +52,21 @@ if not llm:
 st.sidebar.success(f"Connected Model: {active_model}")
 
 # Database Initialization
-@st.cache_resource
-def init_db():
-    conn = duckdb.connect(database=':memory:', read_only=False)
-    conn.execute("CREATE TABLE IF NOT EXISTS subscriptions AS SELECT * FROM read_csv_auto('subscriptions.csv');")
-    return conn
+csv_path = Path(__file__).resolve().with_name("subscriptions.csv")
+csv_fingerprint = hashlib.sha256(csv_path.read_bytes()).hexdigest()
 
-conn = init_db()
+@st.cache_resource
+def init_db(csv_file: str, dataset_fingerprint: str):
+    df = pd.read_csv(csv_file)
+    connection = duckdb.connect(database=":memory:", read_only=False)
+    connection.register("subscriptions_input", df)
+    connection.execute(
+        "CREATE TABLE subscriptions AS SELECT * FROM subscriptions_input"
+    )
+    connection.unregister("subscriptions_input")
+    return connection
+
+conn = init_db(str(csv_path), csv_fingerprint)
 
 def get_db_schema():
     schema_info = conn.execute("DESCRIBE subscriptions;").fetchall()
